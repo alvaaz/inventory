@@ -1,7 +1,10 @@
-import { BrandModel } from '../../brand/brand.model'
-import { Brand } from '../../brand/brand.interface'
+import { Resolver, Arg, Query, Mutation, FieldResolver, Root } from 'type-graphql'
+import { Brand, BrandModel } from '../../entities'
+import { BrandInput } from './input'
 
-export default {
+@Resolver(() => Brand)
+export default class BrandResolver {
+  @Query(() => [Brand])
   async brands(): Promise<Brand[] | undefined> {
     try {
       const brands = await BrandModel.find()
@@ -14,8 +17,10 @@ export default {
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
-  },
-  async createBrand({ brandInput }: { brandInput: Brand }): Promise<Brand> {
+  }
+
+  @Mutation(() => Brand)
+  async createBrand(@Arg('brandInput') brandInput: BrandInput): Promise<Brand> {
     try {
       const newBrand = new BrandModel({
         name: brandInput.name

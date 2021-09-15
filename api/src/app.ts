@@ -1,29 +1,23 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import graphqlHTTP from 'express-graphql'
+import 'reflect-metadata'
+import { buildSchema } from 'type-graphql'
 import { connect } from './db'
-import cors from 'cors'
-import graphQlSchema from './graphql/schema'
-import graphQlResolvers from './graphql/resolvers'
+import { resolvers } from './modules'
+import { ObjectIdScalar } from './utils'
+import { ObjectId } from 'mongodb'
+import { GraphQLServer } from 'graphql-yoga'
 
-const app = express()
-
-app.use(cors())
-
-app.use(bodyParser.json())
-
-app.use(
-  '/graphql',
-  graphqlHTTP({
-    graphiql: true,
-    schema: graphQlSchema,
-    rootValue: graphQlResolvers,
-    context: {
-      messageId: 'test'
+async function bootstrap() {
+  const schema = await buildSchema({
+    resolvers: resolvers,
+    scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }],
+    validate: false,
+    nullableByDefault: true,
+    emitSchemaFile: {
+      path: __dirname + '/schema.gql'
     }
   })
-)
-
-connect()
-
-app.listen(3001, () => console.log('Server on port 3001'))
+  connect()
+  const server = new GraphQLServer({ schema })
+  server.start(() => console.log('Server is running on localhost:4000'))
+}
+bootstrap()

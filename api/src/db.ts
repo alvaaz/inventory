@@ -8,7 +8,8 @@ export async function connect(): Promise<void> {
     await mongoose.connect(
       `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_DB}.ifpqe.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`,
       {
-        useNewUrlParser: true
+        useNewUrlParser: true,
+        useUnifiedTopology: true
       }
     )
     console.log('>>> DB is connected')

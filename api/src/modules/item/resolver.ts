@@ -1,54 +1,30 @@
-import { ItemModel } from '../../item/item.model'
-import { Item } from '../../item/item.interface'
-import { CategoryModel } from '../../category/category.model'
-import { Category } from '../../category/category.interface'
-import { BrandModel } from '../../brand/brand.model'
-import { Brand } from '../../brand/brand.interface'
+import { Item, ItemModel, BrandModel, CategoryModel, Brand, Category } from '../../entities'
 import { timeDifference } from '../../utils'
 import { ObjectId } from 'mongodb'
+import { Resolver, Arg, Query, Mutation, FieldResolver, Root } from 'type-graphql'
+import { ItemInput } from './input'
 
-const category = async (categoryId: Category): Promise<Category> => {
-  try {
-    const category = await CategoryModel.findById(categoryId)
-    return {
-      _id: category._id,
-      name: category.name
-    }
-  } catch (err) {
-    throw new Error(`Something goes wrong ${err}`)
-  }
-}
-
-const brand = async (brandId: Brand): Promise<Brand> => {
-  try {
-    const brand = await BrandModel.findById(brandId)
-    return {
-      _id: brand._id,
-      name: brand.name
-    }
-  } catch (err) {
-    throw new Error(`Something goes wrong ${err}`)
-  }
-}
-
-export default {
-  async item({ itemId }: { itemId: ObjectId }): Promise<Item | undefined> {
+@Resolver(() => Item)
+export default class ItemResolver {
+  @Query(() => Item)
+  async item(@Arg('itemId') itemId: ObjectId): Promise<Item | undefined> {
     try {
       const item = await ItemModel.findById(itemId)
       return {
         _id: item._id,
         name: item.name,
-        brand: brand.bind(this, item.brand),
         model: item.model,
-        category: category.bind(this, item.category),
+        brand: item.brand,
         code: item.code,
         createdAt: new Date(item.createdAt).toLocaleString('es-CL'),
-        updatedAt: timeDifference(new Date(), new Date(item.updatedAt))
+        updatedAt: timeDifference(new Date(), new Date(item.updatedAt)),
+        category: item.category
       }
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
-  },
+  }
+  @Query(() => [Item])
   async items(): Promise<Item[] | undefined> {
     try {
       const items = await ItemModel.find()
@@ -56,9 +32,9 @@ export default {
         return {
           _id: item._id,
           name: item.name,
-          brand: brand.bind(this, item.brand),
+          brand: item.brand,
           model: item.model,
-          category: category.bind(this, item.category),
+          category: item.category,
           code: item.code,
           createdAt: new Date(item.createdAt).toLocaleString('es-CL'),
           updatedAt: timeDifference(new Date(), new Date(item.updatedAt))
@@ -67,8 +43,28 @@ export default {
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
-  },
-  async createItem({ itemInput }: { itemInput: Item }): Promise<Item> {
+  }
+
+  @FieldResolver(() => Brand)
+  async brand(@Root('brand') brand: ObjectId): Promise<Brand> {
+    const data = await BrandModel.findById(brand)
+    return {
+      name: data.name,
+      _id: data._id
+    }
+  }
+
+  @FieldResolver(() => Category)
+  async category(@Root('category') category: ObjectId): Promise<Category> {
+    const data = await CategoryModel.findById(category)
+    return {
+      name: data.name,
+      _id: data._id
+    }
+  }
+
+  @Mutation(() => Item)
+  async createItem(@Arg('itemInput') itemInput: ItemInput): Promise<Item> {
     try {
       const newItem = new ItemModel({
         name: itemInput.name,

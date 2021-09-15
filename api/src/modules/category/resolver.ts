@@ -1,7 +1,11 @@
-import { CategoryModel } from '../../category/category.model'
-import { Category } from '../../category/category.interface'
+import { Category, CategoryModel } from '../../entities'
+import { Resolver, Arg, Query, Mutation } from 'type-graphql'
+import { ObjectId } from 'mongodb'
+import { CategoryInput } from './input'
 
-export default {
+@Resolver(() => Category)
+export default class CategoryResolver {
+  @Query(() => [Category])
   async categories(): Promise<Category[] | undefined> {
     try {
       const categories = await CategoryModel.find()
@@ -14,8 +18,10 @@ export default {
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
-  },
-  async createCategory({ categoryInput }: { categoryInput: Category }): Promise<Category> {
+  }
+
+  @Mutation(() => Category)
+  async createCategory(@Arg('categoryInput') categoryInput: CategoryInput): Promise<Category> {
     try {
       const newCategory = new CategoryModel({
         name: categoryInput.name
