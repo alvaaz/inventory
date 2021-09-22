@@ -1,39 +1,32 @@
-import { Resolver, Arg, Query, Mutation, FieldResolver, Root } from 'type-graphql'
-import { Brand, BrandModel } from '../../entities'
-import { BrandInput } from './input'
+import { Resolver, Arg, Query, Mutation, Root, FieldResolver, Ctx } from 'type-graphql'
+import { Brand, Item } from '../../entities'
+import { MyContext } from './../../utils'
 
 @Resolver(() => Brand)
 export default class BrandResolver {
+  @FieldResolver(() => Item)
+  items(@Root() brand: Brand) {
+    return Item.findByIds(brand.itemIds)
+  }
+
   @Query(() => [Brand])
   async brands(): Promise<Brand[] | undefined> {
     try {
-      const brands = await BrandModel.find()
-      return brands.map((brand: Brand) => {
-        return {
-          _id: brand._id,
-          name: brand.name
-        }
-      })
+      const brands = await Brand.find()
+      return brands.map((brand: Brand) => brand)
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
   }
 
   @Mutation(() => Brand)
-  async createBrand(@Arg('brandInput') brandInput: BrandInput): Promise<Brand> {
+  async createBrand(@Arg('brandName') brandName: string): Promise<Brand> {
     try {
-      const newBrand = new BrandModel({
-        name: brandInput.name
-      })
+      const brand = await Brand.create({
+        name: brandName
+      }).save()
 
-      await newBrand.save()
-
-      const { _id, name } = newBrand
-
-      return {
-        _id,
-        name
-      }
+      return brand
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }

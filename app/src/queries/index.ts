@@ -4,7 +4,7 @@ import { gql } from '@apollo/client';
 export const BRANDS = gql`
   query {
     brands {
-      _id
+      id
       name
     }
   }
@@ -13,7 +13,7 @@ export const BRANDS = gql`
 export const CATEGORIES = gql`
   query {
     categories {
-      _id
+      id
       name
     }
   }
@@ -22,15 +22,15 @@ export const CATEGORIES = gql`
 export const ITEMS = gql`
   query {
     items{
-      _id
+      id
       code
       name
       category {
-        _id
+        id
         name
       }
       brand {
-        _id
+        id
         name
       }
       updatedAt
@@ -41,13 +41,13 @@ export const ITEMS = gql`
 
 export const CREATE_ITEM = gql`
   mutation CreateItem($name: String!, $category: ID!, $brand: ID!, $model: String!){
-    createItem(itemInput: {
+    createItem(input: {
       name: $name
       model: $model
-      brand: $brand
-      category: $category
+      brandId: $brand
+      categoryId: $category
     }){
-      _id
+      id
       code
     }
   }
@@ -55,10 +55,8 @@ export const CREATE_ITEM = gql`
 
 export const CREATE_BRAND = gql`
   mutation CreateBrand($name: String!){
-    createBrand(brandInput: {
-      name: $name
-    }) {
-      _id
+    createBrand(brandName: $name) {
+      id
       name
     }
   }
@@ -66,18 +64,16 @@ export const CREATE_BRAND = gql`
 
 export const CREATE_CATEGORY = gql`
   mutation CreateCategory($name: String!){
-    createCategory(categoryInput: {
-      name: $name
-    }) {
-      _id
+    createCategory(categoryName: $name) {
+      id
       name
     }
   }
 `
 export const ITEM = gql`
-  query Item($id: String!){
+  query Item($id: ID!){
     item(itemId: $id) {
-      _id
+      id
       name
       code
       model
@@ -91,5 +87,11 @@ export const ITEM = gql`
       createdAt
       updatedAt
     }
+  }
+`
+
+export const DELETE_ITEM = gql`
+  mutation DeleteItem($id: ID!){
+    deleteItem(id: $id)
   }
 `

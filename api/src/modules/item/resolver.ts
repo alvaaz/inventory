@@ -1,41 +1,41 @@
-import { Item, ItemModel, BrandModel, CategoryModel, Brand, Category } from '../../entities'
-import { timeDifference } from '../../utils'
-import { ObjectId } from 'mongodb'
-import { Resolver, Arg, Query, Mutation, FieldResolver, Root } from 'type-graphql'
+import { Item, Brand, Category } from '../../entities'
+import { Resolver, Arg, Mutation, Query, FieldResolver, Root, Ctx, Int, ID } from 'type-graphql'
 import { ItemInput } from './input'
+import { MyContext, timeDifference } from './../../utils'
 
 @Resolver(() => Item)
 export default class ItemResolver {
+  @FieldResolver(() => Brand)
+  brand(@Root() item: Item,
+  @Ctx() { brandLoader }: MyContext
+  ) {
+    return brandLoader.load(item.brandId)
+  }
+  @FieldResolver(() => Category)
+  category(@Root() item: Item,
+  @Ctx() { categoryLoader }: MyContext) {
+    return categoryLoader.load(item.categoryId)
+  }
   @Query(() => Item)
-  async item(@Arg('itemId') itemId: ObjectId): Promise<Item | undefined> {
+  async item(@Arg('itemId', () => ID) itemId: number) {
     try {
-      const item = await ItemModel.findById(itemId)
+      const item = await Item.findOne(itemId)
       return {
-        _id: item._id,
-        name: item.name,
-        model: item.model,
-        brand: item.brand,
-        code: item.code,
+        ...item,
         createdAt: new Date(item.createdAt).toLocaleString('es-CL'),
         updatedAt: timeDifference(new Date(), new Date(item.updatedAt)),
-        category: item.category
       }
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
   }
   @Query(() => [Item])
-  async items(): Promise<Item[] | undefined> {
+  async items() {
     try {
-      const items = await ItemModel.find()
-      return items.map((item: Item) => {
+      const items = await Item.find()
+      return items.map(async (item: Item) => {
         return {
-          _id: item._id,
-          name: item.name,
-          brand: item.brand,
-          model: item.model,
-          category: item.category,
-          code: item.code,
+          ...item,
           createdAt: new Date(item.createdAt).toLocaleString('es-CL'),
           updatedAt: timeDifference(new Date(), new Date(item.updatedAt))
         }
@@ -45,64 +45,35 @@ export default class ItemResolver {
     }
   }
 
-  @FieldResolver(() => Brand)
-  async brand(@Root('brand') brand: ObjectId): Promise<Brand> {
-    const data = await BrandModel.findById(brand)
-    return {
-      name: data.name,
-      _id: data._id
-    }
-  }
-
-  @FieldResolver(() => Category)
-  async category(@Root('category') category: ObjectId): Promise<Category> {
-    const data = await CategoryModel.findById(category)
-    return {
-      name: data.name,
-      _id: data._id
-    }
-  }
-
   @Mutation(() => Item)
-  async createItem(@Arg('itemInput') itemInput: ItemInput): Promise<Item> {
+  async createItem(@Arg("input") input: ItemInput): Promise<Item> {
     try {
-      const newItem = new ItemModel({
-        name: itemInput.name,
-        brand: itemInput.brand,
-        model: itemInput.model,
-        category: itemInput.category
-      })
+      const brand = await Brand.findOne(input.brandId);
 
-      await newItem.save()
-
-      await BrandModel.updateOne(
-        {
-          _id: newItem.brand
-        },
-        { $addToSet: { items: newItem } }
-      )
-
-      await CategoryModel.updateOne(
-        {
-          _id: newItem.category
-        },
-        { $addToSet: { items: newItem } }
-      )
-
-      const { _id, name, brand, model, category, code, createdAt, updatedAt } = newItem
-
-      return {
-        _id,
-        name,
-        brand,
-        category,
-        model,
-        code,
-        createdAt,
-        updatedAt
+      if (!brand) {
+        throw new Error("Invalid brand ID");
       }
+      const category = await Category.findOne(input.categoryId);
+
+      if (!category) {
+        throw new Error("Invalid category ID");
+      }
+
+      return Item.create({
+        ...input,
+        category,
+        brand
+      }).save()
+
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
+  }
+  @Mutation(() => Boolean)
+  async deleteItem(
+    @Arg("id", () => Int) id: number,
+  ): Promise<boolean> {
+    await Item.delete({ id });
+    return true;
   }
 }

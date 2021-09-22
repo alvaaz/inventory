@@ -1,5 +1,4 @@
 import { Field, InputType, ID } from 'type-graphql'
-import { ObjectId } from 'mongodb'
 
 @InputType()
 export class ItemInput {
@@ -10,8 +9,8 @@ export class ItemInput {
   model: string
 
   @Field(() => ID)
-  category: ObjectId
+  categoryId: number
 
   @Field(() => ID)
-  brand: ObjectId
+  brandId: number
 }

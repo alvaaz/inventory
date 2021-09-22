@@ -1,3 +1,7 @@
-import { ObjectId } from 'mongodb'
+import { createBrandLoader } from "./createBrandLoader";
+import { createCategoryLoader } from "./createCategoryLoader";
 
-export type Ref<T> = T | ObjectId
+export type MyContext = {
+  brandLoader: ReturnType<typeof createBrandLoader>;
+  categoryLoader: ReturnType<typeof createCategoryLoader>;
+};

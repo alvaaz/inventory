@@ -7,6 +7,7 @@ import {
   CREATE_BRAND,
   CREATE_CATEGORY,
   ITEM,
+  DELETE_ITEM,
 } from "./queries";
 import { Item, Items, Options } from "./interfaces";
 import { Dialog, Transition } from "@headlessui/react";
@@ -31,6 +32,11 @@ function App() {
         });
       },
     }
+  );
+
+  const [deteleItem, { loading: deleteItemLoading }] = useMutation(
+    DELETE_ITEM,
+    { refetchQueries: [ITEMS] }
   );
 
   const [createBrand, { loading: createBrandLoading }] = useMutation(
@@ -88,8 +94,8 @@ function App() {
   const rows = data!.items.map((item: Item) => (
     <tr
       className="cursor-pointer hover:bg-gray-50"
-      key={item._id}
-      id={item._id}
+      key={item.id}
+      id={item.id}
       onClick={(e) => {
         setSingleItem(true);
         getItem({
@@ -122,7 +128,7 @@ function App() {
 
   const transformData = (data: Items): Options => {
     return data?.map((item: Item) => ({
-      value: item._id,
+      value: item.id,
       label: item.name,
     }));
   };
@@ -366,7 +372,7 @@ function App() {
                                   type: actions.fieldsChanged,
                                   fieldName: "brand",
                                   payload: {
-                                    value: data.data.createBrand._id,
+                                    value: data.data.createBrand.id,
                                     label: data.data.createBrand.name,
                                   },
                                 });
@@ -428,7 +434,7 @@ function App() {
                                   type: actions.fieldsChanged,
                                   fieldName: "category",
                                   payload: {
-                                    value: data.data.createCategory._id,
+                                    value: data.data.createCategory.id,
                                     label: data.data.createCategory.name,
                                   },
                                 });

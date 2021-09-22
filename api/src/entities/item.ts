@@ -1,39 +1,58 @@
-import { Field, ID, ObjectType } from 'type-graphql'
-import { getModelForClass, prop } from '@typegoose/typegoose'
+import { Field, ObjectType, ID } from 'type-graphql'
 import { nanoid } from 'nanoid'
-import { ObjectId } from 'mongodb'
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  Column,
+  ManyToOne,
+  BaseEntity,
+  RelationId
+} from "typeorm";
 import { Category, Brand } from './'
 
 @ObjectType()
-export class Item {
+@Entity()
+export class Item extends BaseEntity{
   @Field(() => ID)
-  readonly _id: ObjectId
+  @PrimaryGeneratedColumn()
+  readonly id: number;
 
   @Field()
-  @prop({ required: true })
+  @Column()
   name: string
 
-  @Field(() => Brand)
-  @prop({ ref: 'Brand' })
+  @Field()
+  @ManyToOne(() => Brand, (brand) => brand.items)
   brand: Brand
 
+  @RelationId((item: Item) => item.brand)
+  @Column()
+  brandId: number;
+
   @Field()
-  @prop({ required: true })
+  @Column()
   model: string
 
-  @Field(() => Category)
-  @prop({ ref: 'Category' })
+  @Field()
+  @ManyToOne(() => Category, (category) => category.items)
   category: Category
 
+  @RelationId((item: Item) => item.category)
+  @Column()
+  categoryId: number;
+
   @Field()
-  @prop({ default: (): string => nanoid(5) })
+  @Column({ type: "varchar", default: nanoid(5) })
   code: string
 
   @Field(() => String)
+  @CreateDateColumn()
   createdAt: string
 
   @Field(() => String)
+  @UpdateDateColumn()
   updatedAt: string
 }
 
-export const ItemModel = getModelForClass(Item, { schemaOptions: { timestamps: true } })

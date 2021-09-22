@@ -4,55 +4,45 @@
 # -----------------------------------------------
 
 type Brand {
-  _id: ID
+  id: ID
   items: [Item]
-  name: String
-}
-
-input BrandInput {
   name: String
 }
 
 type Category {
-  _id: ID
+  id: ID
   items: [Item]
   name: String
 }
 
-input CategoryInput {
-  name: String
-}
-
 type Item {
-  _id: ID
   brand: Brand
   category: Category
   code: String
   createdAt: String
+  id: ID
   model: String
   name: String
   updatedAt: String
 }
 
 input ItemInput {
-  brand: ID
-  category: ID
+  brandId: ID
+  categoryId: ID
   model: String
   name: String
 }
 
 type Mutation {
-  createBrand(brandInput: BrandInput): Brand
-  createCategory(categoryInput: CategoryInput): Category
-  createItem(itemInput: ItemInput): Item
+  createBrand(brandName: String): Brand
+  createCategory(categoryName: String): Category
+  createItem(input: ItemInput): Item
+  deleteItem(id: Int): Boolean
 }
-
-"""Mongo object id scalar type"""
-scalar ObjectId
 
 type Query {
   brands: [Brand]
   categories: [Category]
-  item(itemId: ObjectId): Item
+  item(itemId: ID): Item
   items: [Item]
 }

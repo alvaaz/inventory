@@ -1,21 +1,25 @@
-import { Field, ID, ObjectType } from 'type-graphql'
-import { getModelForClass, prop } from '@typegoose/typegoose'
+import { Field, ObjectType, ID } from 'type-graphql'
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, BaseEntity, RelationId } from "typeorm";
 import { Item } from './'
-import { ObjectId } from 'mongodb'
-import { Schema } from 'mongoose'
 
+@Entity()
 @ObjectType()
-export class Category {
+export class Category extends BaseEntity {
   @Field(() => ID)
-  readonly _id: ObjectId
+  @PrimaryGeneratedColumn()
+  id: number
 
-  @Field(() => String)
-  @prop({ required: true })
+  @Field()
+  @Column({
+    length: 100
+  })
   name: string
 
   @Field(() => [Item])
-  @prop({ type: Schema.Types.ObjectId, ref: 'Item' })
-  items?: Item[]
-}
+  @OneToMany(() => Item, (item) => item.brand)
+  items: Item[]
 
-export const CategoryModel = getModelForClass(Category)
+  @RelationId((category: Category) => category.items)
+  @Column("int", { array: true, nullable: true })
+  itemIds: number[];
+}

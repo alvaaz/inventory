@@ -1,40 +1,30 @@
-import { Category, CategoryModel } from '../../entities'
-import { Resolver, Arg, Query, Mutation } from 'type-graphql'
-import { ObjectId } from 'mongodb'
-import { CategoryInput } from './input'
+import { Resolver, Arg, Query, Mutation,FieldResolver, Root } from 'type-graphql'
+import { Category, Item} from '../../entities'
 
 @Resolver(() => Category)
 export default class CategoryResolver {
+  @FieldResolver(() => Item)
+  items(@Root() category: Category) {
+    return Item.findByIds(category.itemIds)
+  }
   @Query(() => [Category])
   async categories(): Promise<Category[] | undefined> {
     try {
-      const categories = await CategoryModel.find()
-      return categories.map((category: Category) => {
-        return {
-          _id: category._id,
-          name: category.name
-        }
-      })
+      const categories = await Category.find()
+      return categories.map((category: Category) => category)
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
   }
 
   @Mutation(() => Category)
-  async createCategory(@Arg('categoryInput') categoryInput: CategoryInput): Promise<Category> {
+  async createCategory(@Arg('categoryName') categoryName: string): Promise<Category> {
     try {
-      const newCategory = new CategoryModel({
-        name: categoryInput.name
-      })
+      const category = await Category.create({
+        name: categoryName
+      }).save()
 
-      await newCategory.save()
-
-      const { _id, name } = newCategory
-
-      return {
-        _id,
-        name
-      }
+      return category
     } catch (err) {
       throw new Error(`Something goes wrong ${err}`)
     }
