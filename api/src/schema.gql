@@ -15,6 +15,11 @@ type Category {
   name: String
 }
 
+type FieldError {
+  field: String
+  message: String
+}
+
 type Item {
   brand: Brand
   category: Category
@@ -38,6 +43,8 @@ type Mutation {
   createCategory(categoryName: String): Category
   createItem(input: ItemInput): Item
   deleteItem(id: Int): Boolean
+  login(password: String, usernameOrEmail: String): UserResponse
+  register(options: UserInput): UserResponse
 }
 
 type Query {
@@ -45,4 +52,23 @@ type Query {
   categories: [Category]
   item(itemId: ID): Item
   items: [Item]
+}
+
+type User {
+  createdAt: String
+  email: String
+  id: Float
+  updatedAt: String
+  username: String
+}
+
+input UserInput {
+  email: String
+  password: String
+  username: String
+}
+
+type UserResponse {
+  errors: [FieldError!]
+  user: User
 }

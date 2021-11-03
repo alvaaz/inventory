@@ -22,5 +22,6 @@ export const config: ConnectionOptions = {
   database: "alvarogoederivera",
   entities: [Brand, Category, Item, User],
   synchronize: true,
-  logging: true
+  logging: true,
+  migrations: ["dist/migration/*.js"]
 };

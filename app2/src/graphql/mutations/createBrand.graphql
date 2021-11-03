@@ -1,6 +1,0 @@
-mutation CreateBrand($name: String!) {
-  createBrand(brandName: $name) {
-    id
-    name
-  }
-}

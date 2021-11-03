@@ -1,3 +1,0 @@
-mutation DeleteItem($id: Int!) {
-  deleteItem(id: $id)
-}

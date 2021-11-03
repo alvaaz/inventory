@@ -1,6 +1,5 @@
-import { Resolver, Arg, Query, Mutation, Root, FieldResolver, Ctx } from 'type-graphql'
+import { Resolver, Arg, Query, Mutation, Root, FieldResolver } from 'type-graphql'
 import { Brand, Item } from '../../entities'
-import { MyContext } from './../../utils'
 
 @Resolver(() => Brand)
 export default class BrandResolver {
