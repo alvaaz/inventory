@@ -1,36 +1,24 @@
-import { LockClosedIcon } from "@heroicons/react/solid";
-import { Formik, Field, Form, FormikErrors, useField } from "formik";
+import { LockClosedIcon, XCircleIcon } from "@heroicons/react/solid";
+import { Formik, Field, Form, FormikErrors } from "formik";
 import { useRouter } from "next/dist/client/router";
 import { useRegisterMutation } from "../generated/graphql";
-import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useState } from "react";
+import { toErrorMap } from "../utils/toErrorMap";
 
 interface Values {
   email: string;
   password: string;
-  username: string;
 }
 
 interface Errors extends Values {}
 
 const initialValues = {
-  username: "",
   email: "",
   password: "",
 };
 
 export default function register() {
-  const [register] = useRegisterMutation();
+  const [register, { loading }] = useRegisterMutation();
   const router = useRouter();
-  let [isOpen, setIsOpen] = useState(false);
-
-  function closeModal() {
-    setIsOpen(false);
-  }
-
-  function openModal() {
-    setIsOpen(true);
-  }
 
   const handleSubmit = async (
     values: Values,
@@ -42,14 +30,9 @@ export default function register() {
       },
     });
     if (response.data?.register.errors) {
-      const errorMap: Record<string, string> = {};
-      response.data.register.errors.forEach(({ field, message }) => {
-        errorMap[field] = message;
-      });
-      setErrors(errorMap);
-      console.log(errorMap);
+      setErrors(toErrorMap(response.data.register.errors));
     } else if (response.data?.register.user) {
-      // router.push("/inventory");
+      router.push("/inventory");
     }
   };
   return (
@@ -63,89 +46,33 @@ export default function register() {
               alt="Workflow"
             />
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Sign in to your account
+              Register
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or{" "}
-              <a
-                href="#"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
-              >
-                start your 14-day free trial
-              </a>
-            </p>
           </div>
           <Formik initialValues={initialValues} onSubmit={handleSubmit}>
             {({ isSubmitting, errors }) => {
               return (
                 <>
-                  {if(errors) {
-                    openModal()
-                    } else {
-                      closeModal()
-                    }
-                  }
-                  <Transition show={isOpen} as={Fragment}>
-                    <Dialog
-                      as="div"
-                      className="fixed inset-0 z-10 overflow-y-auto"
-                      onClose={closeModal}
+                  {Object.keys(errors).length > 0 && (
+                    <div
+                      className="block text-sm text-left text-red-600 bg-red-500 bg-opacity-10 h-12 flex items-center p-4 rounded-md"
+                      role="alert"
                     >
-                      <div className="min-h-screen px-4 text-center">
-                        <Transition.Child
-                          as={Fragment}
-                          enter="ease-out duration-300"
-                          enterFrom="opacity-0"
-                          enterTo="opacity-100"
-                          leave="ease-in duration-200"
-                          leaveFrom="opacity-100"
-                          leaveTo="opacity-0"
-                        >
-                          <Dialog.Overlay className="fixed inset-0" />
-                        </Transition.Child>
-
-                        <Transition.Child
-                          as={Fragment}
-                          enter="ease-out duration-300"
-                          enterFrom="opacity-0 scale-95"
-                          enterTo="opacity-100 scale-100"
-                          leave="ease-in duration-200"
-                          leaveFrom="opacity-100 scale-100"
-                          leaveTo="opacity-0 scale-95"
-                        >
-                          <div className="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
-                            <Dialog.Title
-                              as="h3"
-                              className="text-lg font-medium leading-6 text-gray-900"
-                            >
-                              Payment successful
-                            </Dialog.Title>
-                            <div className="mt-2">
-                              <p className="text-sm text-gray-500">
-                                Your payment has been successfully submitted.
-                                We’ve sent you an email with all of the details
-                                of your order.
-                              </p>
-                            </div>
-
-                            <div className="mt-4">
-                              <button
-                                type="button"
-                                className="inline-flex justify-center px-4 py-2 text-sm font-medium text-blue-900 bg-blue-100 border border-transparent rounded-md hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
-                                onClick={closeModal}
-                              >
-                                Got it, thanks!
-                              </button>
-                            </div>
-                          </div>
-                        </Transition.Child>
+                      <div className="flex items-center">
+                        <XCircleIcon className="h-5 w-5 text-red-400 mr-4" />
+                        <p className="text-red-600">
+                          Se encontraron estos errores en tu formulario
+                          {Object.values(errors).map((error) => (
+                            <li>{error}</li>
+                          ))}
+                        </p>
                       </div>
-                    </Dialog>
-                  </Transition>
+                    </div>
+                  )}
                   <Form className="mt-8 space-y-6">
                     <div className="rounded-md shadow-sm -space-y-px">
                       <div>
-                        <label htmlFor="usernameEmail" className="sr-only">
+                        <label htmlFor="email" className="sr-only">
                           Email address
                         </label>
                         <Field
@@ -158,19 +85,7 @@ export default function register() {
                           placeholder="Email address"
                         />
                       </div>
-                      <div>
-                        <label htmlFor="username" className="sr-only">
-                          Username
-                        </label>
-                        <Field
-                          id="username"
-                          name="username"
-                          autoComplete="username"
-                          required
-                          className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                          placeholder="Username"
-                        />
-                      </div>
+
                       <div>
                         <label htmlFor="password" className="sr-only">
                           Password

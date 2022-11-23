@@ -8,16 +8,21 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from '../../utils'
 import Redis from "ioredis";
+import cors from "cors";
 
 export default async () => {
   const app = express();
-
   const RedisStore = connectRedis(session)
   const redis = new Redis('127.0.0.1:6379');
 
+  app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+  }))
+
   app.use(
     session({
-      name: 'qid',
+      name: process.env.COOKIE_NAME,
       store: new RedisStore({
         client: redis,
         disableTouch: true
@@ -39,6 +44,7 @@ export default async () => {
     context: ({ req, res }: MyContext) => ({
       req,
       res,
+      redis,
       categoryLoader: createCategoryLoader(),
       brandLoader: createBrandLoader()
     }),
@@ -51,7 +57,8 @@ export default async () => {
 
   apolloServer.applyMiddleware({
     app,
-    path: '/graphql'
+    path: '/graphql',
+    cors: false
   })
 
   app.listen(4000, () =>

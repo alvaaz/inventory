@@ -15,11 +15,11 @@ const env = (name: string): string => {
 
 export const config: ConnectionOptions = {
   type: "postgres",
-  host: "localhost",
-  port: 5432,
-  username: "alvarogoederivera",
-  password: "",
-  database: "alvarogoederivera",
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT),
+  username: process.env.DB_PASSWORD,
+  password: process.env.DB_USER,
+  database: process.env.DB_NAME,
   entities: [Brand, Category, Item, User],
   synchronize: true,
   logging: true,

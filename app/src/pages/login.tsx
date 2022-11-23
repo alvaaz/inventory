@@ -1,16 +1,11 @@
 import { LockClosedIcon } from "@heroicons/react/solid";
-import { Formik, Field, Form, FormikHelpers } from "formik";
+import { Formik, Field, Form } from "formik";
 import { useRouter } from "next/dist/client/router";
-import { useRegisterMutation } from "../generated/graphql";
-
-interface Values {
-  email: string;
-  password: string;
-  username: string;
-}
+import { useLoginMutation } from "../generated/graphql";
+import Link from "next/link";
 
 export default function login() {
-  const [register] = useRegisterMutation();
+  const [login] = useLoginMutation();
   const router = useRouter();
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -22,39 +17,41 @@ export default function login() {
             alt="Workflow"
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Inicia sesión con tu cuenta
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <a
-              href="#"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              start your 14-day free trial
-            </a>
+            O{" "}
+            <Link href="/register">
+              <a className="font-medium text-indigo-600 hover:text-indigo-500">
+                regístrate
+              </a>
+            </Link>
           </p>
         </div>
         <Formik
           initialValues={{
-            username: "",
             email: "",
             password: "",
           }}
           onSubmit={async (values, { setErrors }) => {
-            const response = await register({
+            const response = await login({
               variables: {
                 options: values,
               },
             });
-            if (response.data?.register.errors) {
+            if (response.data?.login.errors) {
               const errorMap: Record<string, string> = {};
-              response.data.register.errors.forEach(({ field, message }) => {
+              response.data.login.errors.forEach(({ field, message }) => {
                 errorMap[field] = message;
               });
-
               setErrors(errorMap);
-            } else if (response.data?.register.user) {
-              router.push("/inventory");
+            } else if (response.data?.login.user) {
+              console.log(response.data.login.user);
+              if (typeof router.query.next === "string") {
+                router.push(router.query.next);
+              } else {
+                router.push("/inventory");
+              }
             }
           }}
         >
@@ -64,8 +61,8 @@ export default function login() {
                 <input type="hidden" name="remember" defaultValue="true" />
                 <div className="rounded-md shadow-sm -space-y-px">
                   <div>
-                    <label htmlFor="usernameEmail" className="sr-only">
-                      Email address
+                    <label htmlFor="email" className="sr-only">
+                      Correo electrónico
                     </label>
                     <Field
                       id="email"
@@ -74,25 +71,12 @@ export default function login() {
                       autoComplete="email"
                       required
                       className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                      placeholder="Email address"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="username" className="sr-only">
-                      Username
-                    </label>
-                    <Field
-                      id="username"
-                      name="username"
-                      autoComplete="username"
-                      required
-                      className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                      placeholder="Username"
+                      placeholder="Correo electrónico"
                     />
                   </div>
                   <div>
                     <label htmlFor="password" className="sr-only">
-                      Password
+                      Contraseña
                     </label>
                     <Field
                       id="password"
@@ -101,7 +85,7 @@ export default function login() {
                       autoComplete="current-password"
                       required
                       className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                      placeholder="Password"
+                      placeholder="Contraseña"
                     />
                   </div>
                 </div>
@@ -144,7 +128,7 @@ export default function login() {
                         aria-hidden="true"
                       />
                     </span>
-                    Sign in
+                    Acceder
                   </button>
                 </div>
               </Form>
