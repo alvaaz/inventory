@@ -77,11 +77,12 @@ function App() {
         category: category!.value,
         brand: brand!.value,
         model: model,
+        description: description,
       },
     });
   };
 
-  const { name, brand, category, model, code } = state;
+  const { name, brand, category, model, code, description } = state;
 
   const [open, setOpen] = useState<boolean>(false);
   const [singleItem, setSingleItem] = useState<boolean>(false);

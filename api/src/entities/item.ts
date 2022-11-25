@@ -36,6 +36,10 @@ export class Item extends BaseEntity{
   model: string
 
   @Field()
+  @Column()
+  description: string
+
+  @Field()
   @ManyToOne(() => Category, (category) => category.items)
   category: Category
 

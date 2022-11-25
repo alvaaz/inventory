@@ -62,7 +62,7 @@ export default class ItemResolver {
       return Item.create({
         ...input,
         category,
-        brand
+        brand,
       }).save()
 
     } catch (err) {

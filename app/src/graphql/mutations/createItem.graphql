@@ -3,6 +3,7 @@ mutation CreateItem(
   $category: ID!
   $brand: ID!
   $model: String!
+  $description: String!
 ) {
   createItem(
     input: {
@@ -10,6 +11,7 @@ mutation CreateItem(
       model: $model
       brandId: $brand
       categoryId: $category
+      description: $description
     }
   ) {
     id

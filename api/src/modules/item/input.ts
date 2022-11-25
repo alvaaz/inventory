@@ -8,6 +8,9 @@ export class ItemInput {
   @Field()
   model: string
 
+  @Field()
+  description: string
+
   @Field(() => ID)
   categoryId: number
 

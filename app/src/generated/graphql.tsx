@@ -40,6 +40,7 @@ export type Item = {
   category: Category;
   code: Scalars['String'];
   createdAt: Scalars['String'];
+  description: Scalars['String'];
   id: Scalars['ID'];
   model: Scalars['String'];
   name: Scalars['String'];
@@ -49,19 +50,28 @@ export type Item = {
 export type ItemInput = {
   brandId: Scalars['ID'];
   categoryId: Scalars['ID'];
+  description: Scalars['String'];
   model: Scalars['String'];
   name: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
+  changePassword: UserResponse;
   createBrand: Brand;
   createCategory: Category;
   createItem: Item;
   deleteItem: Scalars['Boolean'];
+  forgotPassword: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
   register: UserResponse;
+};
+
+
+export type MutationChangePasswordArgs = {
+  newPassword: Scalars['String'];
+  token: Scalars['String'];
 };
 
 
@@ -82,6 +92,11 @@ export type MutationCreateItemArgs = {
 
 export type MutationDeleteItemArgs = {
   id: Scalars['Int'];
+};
+
+
+export type MutationForgotPasswordArgs = {
+  email: Scalars['String'];
 };
 
 
@@ -148,6 +163,7 @@ export type CreateItemMutationVariables = Exact<{
   category: Scalars['ID'];
   brand: Scalars['ID'];
   model: Scalars['String'];
+  description: Scalars['String'];
 }>;
 
 
@@ -194,12 +210,12 @@ export type ItemQueryVariables = Exact<{
 }>;
 
 
-export type ItemQuery = { __typename?: 'Query', item: { __typename?: 'Item', id: string, name: string, code: string, model: string, createdAt: string, updatedAt: string, category: { __typename?: 'Category', name: string }, brand: { __typename?: 'Brand', name: string } } };
+export type ItemQuery = { __typename?: 'Query', item: { __typename?: 'Item', id: string, name: string, code: string, model: string, description: string, createdAt: string, updatedAt: string, category: { __typename?: 'Category', name: string }, brand: { __typename?: 'Brand', name: string } } };
 
 export type ItemsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ItemsQuery = { __typename?: 'Query', items: Array<{ __typename?: 'Item', id: string, code: string, name: string, updatedAt: string, createdAt: string, category: { __typename?: 'Category', id: string, name: string }, brand: { __typename?: 'Brand', id: string, name: string } }> };
+export type ItemsQuery = { __typename?: 'Query', items: Array<{ __typename?: 'Item', id: string, code: string, name: string, description: string, updatedAt: string, createdAt: string, category: { __typename?: 'Category', id: string, name: string }, brand: { __typename?: 'Brand', id: string, name: string } }> };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -281,9 +297,9 @@ export type CreateCategoryMutationHookResult = ReturnType<typeof useCreateCatego
 export type CreateCategoryMutationResult = Apollo.MutationResult<CreateCategoryMutation>;
 export type CreateCategoryMutationOptions = Apollo.BaseMutationOptions<CreateCategoryMutation, CreateCategoryMutationVariables>;
 export const CreateItemDocument = gql`
-    mutation CreateItem($name: String!, $category: ID!, $brand: ID!, $model: String!) {
+    mutation CreateItem($name: String!, $category: ID!, $brand: ID!, $model: String!, $description: String!) {
   createItem(
-    input: {name: $name, model: $model, brandId: $brand, categoryId: $category}
+    input: {name: $name, model: $model, brandId: $brand, categoryId: $category, description: $description}
   ) {
     id
     code
@@ -309,6 +325,7 @@ export type CreateItemMutationFn = Apollo.MutationFunction<CreateItemMutation, C
  *      category: // value for 'category'
  *      brand: // value for 'brand'
  *      model: // value for 'model'
+ *      description: // value for 'description'
  *   },
  * });
  */
@@ -541,6 +558,7 @@ export const ItemDocument = gql`
     name
     code
     model
+    description
     category {
       name
     }
@@ -595,6 +613,7 @@ export const ItemsDocument = gql`
       id
       name
     }
+    description
     updatedAt
     createdAt
   }

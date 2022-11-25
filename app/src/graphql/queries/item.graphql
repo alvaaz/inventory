@@ -4,6 +4,7 @@ query Item($id: ID!) {
     name
     code
     model
+    description
     category {
       name
     }

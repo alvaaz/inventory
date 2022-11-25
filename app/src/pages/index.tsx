@@ -6,5 +6,14 @@ export default function index() {
 }
 
 index.getLayout = function getLayout(page: ReactElement) {
-  return <Layout title="Dashboard">{page}</Layout>;
+  return (
+    <>
+      <Layout title="Dashboard">
+        {page}
+        <h1>Hola</h1>
+        <></>
+      </Layout>
+      <h1>Hola</h1>
+    </>
+  );
 };

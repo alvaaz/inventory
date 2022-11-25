@@ -48,4 +48,5 @@ export type State = {
     label: string;
   } | null;
   code: string;
+  description: string;
 }

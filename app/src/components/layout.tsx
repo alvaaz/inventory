@@ -1,10 +1,13 @@
-import React, { Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import Icon from "./icon/";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useLogoutMutation } from "../generated/graphql";
 import { useApolloClient } from "@apollo/client";
+import { useModal } from "../components/Modal2";
+import { useComponentVisible } from "../hooks/useComponentVisible";
 
 type Props = {
   children: React.ReactNode;
@@ -20,6 +23,8 @@ const user = {
 const navigation = [
   { name: "Dashboard", href: "/" },
   { name: "Inventario", href: "/inventory" },
+  { name: "Categorías", href: "/categories" },
+  { name: "Marcas", href: "/brands" },
 ];
 const userNavigation = [
   { name: "Perfil", href: "#" },
@@ -35,6 +40,22 @@ export default function Layout({ children, title }: Props): JSX.Element {
   const router = useRouter();
   const [logout] = useLogoutMutation();
   const apolloClient = useApolloClient();
+  const { overlay, setClose, reff, setOverlay } = useModal();
+
+  const { ref } = useComponentVisible(false, setOverlay);
+
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    console.log(reff.reff?.getBoundingClientRect());
+    if (reff) {
+      setPosition({
+        x: reff.reff?.getBoundingClientRect().x,
+        y: reff.reff?.getBoundingClientRect().y,
+      });
+    }
+  }, [reff]);
+
   return (
     <>
       <div className="min-h-full">
@@ -196,73 +217,83 @@ export default function Layout({ children, title }: Props): JSX.Element {
             </>
           )}
         </Disclosure>
-
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <div className="flex flex-col">
-              {/* <nav
-                aria-label="Breadcrumb"
-                className="flex items-center text-gray-500 text-sm font-medium space-x-2 whitespace-nowrap"
-              >
-                <a
-                  href="/components#product-application-ui"
-                  className="hover:text-gray-900"
-                >
-                  Inventario
-                </a>
-                <svg
-                  aria-hidden="true"
-                  width="24"
-                  height="24"
-                  fill="none"
-                  className="flex-none text-gray-300"
-                >
-                  <path
-                    d="M10.75 8.75l3.5 3.25-3.5 3.25"
-                    stroke="currentColor"
-                    stroke-width="1.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  ></path>
-                </svg>
-                <a
-                  href="/components#product-application-ui-headings"
-                  aria-current="page"
-                  className="truncate hover:text-gray-900"
-                >
-                  Headings
-                </a>
-              </nav> */}
-              <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            </div>
-            <div className="mt-5 flex lg:mt-0 lg:ml-4">
-              <span className="hidden sm:block ml-3">
-                <button
-                  type="button"
-                  // onClick={() => setSingleItem(true)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Exportar
-                </button>
-              </span>
-
-              <span className="sm:ml-3">
-                <button
-                  type="button"
-                  // onClick={() => setOpen(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Crear artículo
-                </button>
-              </span>
-            </div>
-          </div>
-        </header>
-        <main>
-          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            {children}
-          </div>
-        </main>
+        {children}
+      </div>
+      <div
+        className="absolute top-0 left-0"
+        ref={ref}
+        style={{
+          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
+        }}
+      >
+        <Menu>
+          <Transition
+            as={Fragment}
+            show={overlay}
+            enter="transition ease-out duration-100"
+            enterFrom="transform opacity-0 scale-95"
+            enterTo="transform opacity-100 scale-100"
+            leave="transition ease-in duration-75"
+            leaveFrom="transform opacity-100 scale-100"
+            leaveTo="transform opacity-0 scale-95"
+          >
+            <Menu.Items className="absolute right-0 w-56 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <div className="px-1 py-1 ">
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      className={`${
+                        active ? "bg-indigo-500 text-white" : "text-gray-900"
+                      } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                    >
+                      {active ? (
+                        <Icon
+                          name="edit-active"
+                          className="w-5 h-5 mr-2"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Icon
+                          name="edit-inactive"
+                          className="w-5 h-5 mr-2"
+                          aria-hidden="true"
+                        />
+                      )}
+                      Edit
+                    </button>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => {
+                        setClose(true);
+                      }}
+                      className={`${
+                        active ? "bg-indigo-500 text-white" : "text-gray-900"
+                      } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                    >
+                      {active ? (
+                        <Icon
+                          name="delete-active"
+                          className="w-5 h-5 mr-2 text-violet-400"
+                          aria-hidden="true"
+                        />
+                      ) : (
+                        <Icon
+                          name="delete-inactive"
+                          className="w-5 h-5 mr-2 text-violet-400"
+                          aria-hidden="true"
+                        />
+                      )}
+                      Delete2
+                    </button>
+                  )}
+                </Menu.Item>
+              </div>
+            </Menu.Items>
+          </Transition>
+        </Menu>
       </div>
     </>
   );
