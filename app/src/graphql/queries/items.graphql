@@ -1,0 +1,18 @@
+query Items {
+  items {
+    id
+    code
+    name
+    category {
+      id
+      name
+    }
+    brand {
+      id
+      name
+    }
+    description
+    updatedAt
+    createdAt
+  }
+}

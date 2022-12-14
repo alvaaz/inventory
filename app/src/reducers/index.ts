@@ -6,6 +6,7 @@ export const initialState: State = {
   model: "",
   category: null,
   code: "",
+  description: "",
 };
 
 export const actions: IActions = {

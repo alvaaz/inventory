@@ -1,14 +1,18 @@
-import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import {
-  ITEMS,
-  CREATE_ITEM,
-  CATEGORIES,
-  BRANDS,
-  CREATE_BRAND,
-  CREATE_CATEGORY,
-  ITEM,
-} from "./queries";
-import { Item, Items, Options } from "./interfaces";
+  useItemsQuery,
+  useDeleteItemMutation,
+  useItemLazyQuery,
+  useCreateItemMutation,
+  useCreateBrandMutation,
+  useCreateCategoryMutation,
+  ItemsDocument,
+  BrandsDocument,
+  useBrandsLazyQuery,
+  useCategoriesLazyQuery,
+  Item,
+  Brand,
+} from "./generated/graphql";
+import { Options } from "./interfaces";
 import { Dialog, Transition } from "@headlessui/react";
 import { FolderAddIcon } from "@heroicons/react/outline";
 import React, { Fragment, useState, useReducer } from "react";
@@ -20,39 +24,39 @@ function App() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   // MUTATIONS
-  const [createItem, { loading: createItemLoading }] = useMutation(
-    CREATE_ITEM,
-    {
-      refetchQueries: [ITEMS],
-      onCompleted(data) {
-        dispatch({
-          type: actions.submittedForm,
-          payload: data.createItem.code,
-        });
-      },
-    }
-  );
+  const [createItem, { loading: createItemLoading }] = useCreateItemMutation({
+    refetchQueries: [ItemsDocument],
+    onCompleted(data) {
+      dispatch({
+        type: actions.submittedForm,
+        payload: data.createItem.code,
+      });
+    },
+  });
 
-  const [createBrand, { loading: createBrandLoading }] = useMutation(
-    CREATE_BRAND,
-    { refetchQueries: [BRANDS] }
+  const [deteleItem, { loading: deleteItemLoading }] = useDeleteItemMutation({
+    refetchQueries: [ItemsDocument],
+  });
+
+  const [createBrand, { loading: createBrandLoading }] = useCreateBrandMutation(
+    { refetchQueries: [BrandsDocument] }
   );
 
   const [createCategory, { loading: createCategoryLoading }] =
-    useMutation(CREATE_CATEGORY);
+    useCreateCategoryMutation();
 
   // QUERIES
-  const { loading, error, data } = useQuery<{ items: Item[] }>(ITEMS, {
+  const { loading, error, data } = useItemsQuery({
     pollInterval: 60000,
   });
 
   const [getBrands, { loading: brandLoading, data: dataBrand }] =
-    useLazyQuery(BRANDS);
+    useBrandsLazyQuery();
 
-  const [getItem, { data: itemData }] = useLazyQuery<{ item: Item }>(ITEM);
+  const [getItem, { data: itemData }] = useItemLazyQuery();
 
   const [getCategories, { loading: categoryLoading, data: categoryData }] =
-    useLazyQuery(CATEGORIES);
+    useCategoriesLazyQuery();
 
   // HANDLES
   const handleChange = (
@@ -70,14 +74,15 @@ function App() {
     createItem({
       variables: {
         name: name,
-        category: category?.value,
-        brand: brand?.value,
+        category: category!.value,
+        brand: brand!.value,
         model: model,
+        description: description,
       },
     });
   };
 
-  const { name, brand, category, model, code } = state;
+  const { name, brand, category, model, code, description } = state;
 
   const [open, setOpen] = useState<boolean>(false);
   const [singleItem, setSingleItem] = useState<boolean>(false);
@@ -85,11 +90,11 @@ function App() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  const rows = data!.items.map((item: Item) => (
+  const rows = data!.items.map((item) => (
     <tr
       className="cursor-pointer hover:bg-gray-50"
-      key={item._id}
-      id={item._id}
+      key={item.id}
+      id={item.id}
       onClick={(e) => {
         setSingleItem(true);
         getItem({
@@ -120,9 +125,9 @@ function App() {
     </tr>
   ));
 
-  const transformData = (data: Items): Options => {
-    return data?.map((item: Item) => ({
-      value: item._id,
+  const transformData = (data: any): Options => {
+    return data?.map((item: any) => ({
+      value: item.id,
       label: item.name,
     }));
   };
@@ -340,7 +345,7 @@ function App() {
                             Marca
                           </label>
                           <CreatableSelect
-                            options={transformData(dataBrand?.brands)}
+                            options={transformData(dataBrand)}
                             onFocus={() => getBrands()}
                             isDisabled={createBrandLoading}
                             placeholder="Selecciona una marca..."
@@ -366,8 +371,8 @@ function App() {
                                   type: actions.fieldsChanged,
                                   fieldName: "brand",
                                   payload: {
-                                    value: data.data.createBrand._id,
-                                    label: data.data.createBrand.name,
+                                    value: data.data!.createBrand.id,
+                                    label: data.data!.createBrand.name,
                                   },
                                 });
                               });
@@ -428,8 +433,8 @@ function App() {
                                   type: actions.fieldsChanged,
                                   fieldName: "category",
                                   payload: {
-                                    value: data.data.createCategory._id,
-                                    label: data.data.createCategory.name,
+                                    value: data.data!.createCategory.id,
+                                    label: data.data!.createCategory.name,
                                   },
                                 });
                               });

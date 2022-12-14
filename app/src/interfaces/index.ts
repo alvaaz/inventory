@@ -1,10 +1,10 @@
 export type Brand = {
-  _id: string
+  id: string
   name: string
 }
 
 export type Category = {
-  _id: string
+  id: string
   name: string
 }
 
@@ -16,7 +16,7 @@ export type Option = {
 export type Options = Option[]
 
 export type Item = {
-  _id: string
+  id: string
   code: string
   name: string
   model: string
@@ -48,4 +48,5 @@ export type State = {
     label: string;
   } | null;
   code: string;
+  description: string;
 }

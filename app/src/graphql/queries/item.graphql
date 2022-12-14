@@ -1,0 +1,18 @@
+query Item($id: ID!) {
+  item(itemId: $id) {
+    id
+    name
+    code
+    model
+    description
+    category {
+      name
+    }
+    brand {
+      name
+    }
+    code
+    createdAt
+    updatedAt
+  }
+}
