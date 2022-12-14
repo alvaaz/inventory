@@ -20,9 +20,7 @@ import {
   Item,
 } from "../generated/graphql";
 import { Table } from "../components/table";
-import { MenuComponent } from "../components";
 import { useModal } from "../components/Modal2";
-
 const Inventory = () => {
   useIsAuth();
   const itemsRef = useRef<any>(null);
@@ -40,7 +38,6 @@ const Inventory = () => {
       });
     },
   });
-
   const [deteleItem, { loading: deleteItemLoading }] = useDeleteItemMutation({
     refetchQueries: [namedOperations.Query.Items],
   });
@@ -108,6 +105,10 @@ const Inventory = () => {
     }
     return itemsRef.current;
   }
+
+  type ElementPositions = {
+    [key: string]: number;
+  };
 
   const handleClick = (e: any, item: Item) => {
     e.stopPropagation();

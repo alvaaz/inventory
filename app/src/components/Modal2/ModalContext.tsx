@@ -39,7 +39,7 @@ export const ModalProvider: React.FC = ({ children }) => {
   const [modalContent, setModalContent] = React.useState<ReactNode | null>(
     null
   );
-  const [close, setClose] = React.useState<boolean>(true);
+  const [close, setClose] = React.useState<boolean>(false);
   const [overlay, setOverlay] = React.useState<boolean>(false);
   const [reff, setReff] = React.useState<{
     reff: any | null;

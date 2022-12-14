@@ -1,6 +1,6 @@
 type Props = {
   className?: string;
-  ariaHidden?: boolean;
+  "aria-hidden"?: boolean;
 };
 
 export default function EditInactive(props: Props) {
